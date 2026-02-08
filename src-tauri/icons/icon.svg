@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#006747"/>
+      <stop offset="100%" style="stop-color:#004D36"/>
+    </linearGradient>
+    <linearGradient id="lockGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FDBB30"/>
+      <stop offset="100%" style="stop-color:#E5A520"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="512" cy="512" r="480" fill="#0D1B2A"/>
+  
+  <!-- Shield body -->
+  <path d="M512 120 L820 250 L820 520 C820 720 680 880 512 940 C344 880 204 720 204 520 L204 250 Z" 
+        fill="url(#shieldGrad)" filter="url(#shadow)" stroke="#FDBB30" stroke-width="8"/>
+  
+  <!-- Inner shield highlight -->
+  <path d="M512 168 L784 282 L784 520 C784 698 656 844 512 898 C368 844 240 698 240 520 L240 282 Z" 
+        fill="none" stroke="rgba(253,187,48,0.15)" stroke-width="3"/>
+
+  <!-- VPN tunnel lines (abstract network paths) -->
+  <g opacity="0.2" stroke="#FDBB30" stroke-width="2" fill="none">
+    <path d="M350 400 Q512 350 674 400"/>
+    <path d="M350 460 Q512 410 674 460"/>
+    <path d="M350 520 Q512 470 674 520"/>
+  </g>
+
+  <!-- Lock body -->
+  <rect x="420" y="480" width="184" height="150" rx="16" fill="url(#lockGrad)"/>
+  
+  <!-- Lock shackle -->
+  <path d="M448 480 L448 420 C448 370 476 340 512 340 C548 340 576 370 576 420 L576 480" 
+        fill="none" stroke="#FDBB30" stroke-width="28" stroke-linecap="round"/>
+  
+  <!-- Keyhole -->
+  <circle cx="512" cy="540" r="20" fill="#004D36"/>
+  <rect x="505" y="545" width="14" height="35" rx="4" fill="#004D36"/>
+</svg>

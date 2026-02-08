@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DonsProtect</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>DonsProtect</h1>
+      <p class="subtitle">USFCA VPN Client</p>
+    </header>
+
+    <!-- Status -->
+    <div class="status-section">
+      <span id="status-dot" class="dot disconnected"></span>
+      <span id="status-text">Disconnected</span>
+    </div>
+
+    <!-- Gateway selector -->
+    <div class="gateway-section">
+      <label for="gateway">Gateway</label>
+      <select id="gateway">
+        <option value="vpn1.usfca.edu">vpn1.usfca.edu (Student)</option>
+        <option value="svpn.usfca.edu">svpn.usfca.edu (Faculty)</option>
+      </select>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="student">Student</button>
+      <button class="tab" data-tab="faculty">Faculty</button>
+    </div>
+
+    <!-- Student panel -->
+    <div id="panel-student" class="panel active">
+      <input type="text" id="username" placeholder="NetID" autocomplete="username">
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+      <button id="btn-connect-student" class="btn btn-connect">Connect</button>
+    </div>
+
+    <!-- Faculty panel -->
+    <div id="panel-faculty" class="panel">
+      <p class="panel-hint">Authenticate via Duo SSO to connect.</p>
+      <button id="btn-connect-faculty" class="btn btn-connect">Log in with Duo</button>
+    </div>
+
+    <!-- Disconnect (shown when connected) -->
+    <div id="panel-connected" class="panel">
+      <button id="btn-disconnect" class="btn btn-disconnect">Disconnect</button>
+    </div>
+
+    <!-- Logs -->
+    <div class="logs-section">
+      <h3>Logs</h3>
+      <pre id="logs"></pre>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
