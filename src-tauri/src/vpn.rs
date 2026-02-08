@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::sync::Arc;
 
 use serde::Serialize;
@@ -29,15 +30,33 @@ pub struct LogPayload {
 
 // ── Platform-specific helpers ─────────────────────────────────
 
-/// Return the openconnect binary name for this platform.
-fn openconnect_bin() -> &'static str {
+/// Resolve the openconnect binary path.
+///
+/// On macOS / Linux, privilege-escalation wrappers (osascript, pkexec)
+/// run in a sanitized root environment that does **not** inherit the
+/// user's `$PATH`. Homebrew installs (`/opt/homebrew/bin`,
+/// `/usr/local/bin`) won't be found. We resolve the absolute path at
+/// build time so the elevated shell can find the binary.
+fn openconnect_bin() -> String {
     if cfg!(target_os = "windows") {
-        // On Windows, openconnect is typically installed via the GUI
-        // installer and available as openconnect.exe on PATH, or users
-        // can install via chocolatey / winget.
-        "openconnect.exe"
+        "openconnect.exe".to_string()
     } else {
-        "openconnect"
+        let candidates = [
+            "/opt/homebrew/bin/openconnect", // macOS Apple Silicon (Homebrew)
+            "/usr/local/bin/openconnect",    // macOS Intel (Homebrew)
+            "/usr/bin/openconnect",          // Linux (apt / dnf / pacman)
+            "/usr/sbin/openconnect",         // Some Linux distros
+            "/snap/bin/openconnect",         // Ubuntu Snap
+        ];
+
+        for path in candidates {
+            if Path::new(path).exists() {
+                return path.to_string();
+            }
+        }
+
+        // Fallback: hope it's on PATH (works in non-elevated contexts)
+        "openconnect".to_string()
     }
 }
 
@@ -179,7 +198,16 @@ pub async fn disconnect<R: Runtime>(app: AppHandle<R>) -> Result<(), String> {
 
     if let Some(c) = child.take() {
         emit_log(&app, "Disconnecting...");
-        c.kill().map_err(|e| format!("Failed to kill process: {}", e))?;
+
+        // 1. Kill the privilege-escalation wrapper (osascript / pkexec / powershell).
+        let _ = c.kill();
+
+        // 2. Clean up orphaned openconnect processes.
+        //    Killing osascript/pkexec does NOT reliably propagate SIGKILL to
+        //    the openconnect child running as root. The orphan keeps the tun
+        //    interface locked, causing "Could not create tun" on reconnect.
+        cleanup_openconnect();
+
         let _ = app.emit("vpn-status", "disconnected");
         emit_log(&app, "Disconnected.");
     } else {
@@ -187,6 +215,44 @@ pub async fn disconnect<R: Runtime>(app: AppHandle<R>) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+/// Best-effort cleanup of orphaned openconnect processes.
+///
+/// When we SIGKILL the privilege-escalation wrapper, the child openconnect
+/// (running as root) can become an orphan. We try platform-appropriate
+/// methods to reap it. If none succeed (e.g. no cached sudo credentials
+/// on macOS), the user may need to manually run:
+///     `sudo killall -9 openconnect`
+pub fn cleanup_openconnect() {
+    #[cfg(target_os = "macos")]
+    {
+        // `sudo -n` is non-interactive: succeeds only if credentials are
+        // cached (within the sudo timeout). Won't prompt the user.
+        let _ = std::process::Command::new("sudo")
+            .args(["-n", "killall", "-9", "openconnect"])
+            .output();
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // Same strategy: non-interactive sudo.
+        let _ = std::process::Command::new("sudo")
+            .args(["-n", "killall", "-9", "openconnect"])
+            .output();
+        // Fallback: pkill (works if user's session has lingering privileges)
+        let _ = std::process::Command::new("pkill")
+            .args(["-9", "openconnect"])
+            .output();
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        // taskkill can kill elevated processes from an elevated parent.
+        let _ = std::process::Command::new("taskkill")
+            .args(["/F", "/IM", "openconnect.exe"])
+            .output();
+    }
 }
 
 // ── Helpers ───────────────────────────────────────────────────

@@ -7,6 +7,14 @@
     "core:default",
     "core:event:default",
     "core:window:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        { "name": "osascript", "cmd": "osascript", "args": true },
+        { "name": "pkexec", "cmd": "pkexec", "args": true },
+        { "name": "powershell", "cmd": "powershell", "args": true }
+      ]
+    },
     "shell:allow-spawn",
     "shell:allow-kill"
   ]

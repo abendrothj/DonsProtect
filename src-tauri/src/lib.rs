@@ -90,6 +90,8 @@ pub fn run() {
             if let Some(c) = child.take() {
                 let _ = c.kill();
             }
+            // Also kill any orphaned openconnect that survived the wrapper kill
+            vpn::cleanup_openconnect();
         }
     });
 }
