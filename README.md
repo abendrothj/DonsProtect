@@ -1,6 +1,10 @@
 # DonsProtect
 
-A lightweight, transparent desktop VPN client for the University of San Francisco. Built as a clean alternative to the official Palo Alto GlobalProtect client, which resists force-quitting and runs opaque background processes.
+**A transparent alternative to the official USFCA GlobalProtect VPN client.**
+
+The Palo Alto GlobalProtect client **cannot be closed** — the app provides no way to stop it. Not through quitting, not through any menu option. Background services keep running no matter what you do. DonsProtect solves this by giving you a proper desktop application that connects, disconnects, and **actually closes** when you quit it.
+
+Built for **University of San Francisco** students, faculty, and staff who want a VPN client that behaves like a normal application.
 
 DonsProtect uses the exact same GlobalProtect protocol under the hood (via [OpenConnect](https://www.infradead.org/openconnect/)) but gives you full control: you can see every log line, quit any time, and nothing lingers after you close it.
 
@@ -10,16 +14,27 @@ Works on **macOS**, **Windows**, and **Linux**.
 
 ---
 
-## Why This Exists
+## Why Use DonsProtect Instead?
 
-The official GlobalProtect client:
+### The Official GlobalProtect Client:
 
+- **Cannot be closed** — the app provides no option to stop it
+- Quitting does nothing — background services continue running
+- Must be force-killed or uninstalled to truly stop it
 - Installs persistent system services and daemons that survive reboots
-- Fights you when you try to quit or uninstall it
 - Runs opaque background agents with no visibility into what they're doing
-- Cannot be easily force-quit without workarounds
+- Resists force-quitting and uninstalling
+- No log visibility — you have no idea what it's doing
 
-DonsProtect does none of that. It's a single app. You launch it, connect, and when you quit — everything dies. No background agents, no system extensions, no residual processes.
+### DonsProtect:
+
+- **Actually quits when you close it** — no persistent processes
+- Closing the app disconnects and stops everything
+- No persistent background services or daemons
+- Full log visibility — see every line of OpenConnect output in real time
+- No system extensions or kernel modules
+- Clean uninstall — just delete the app
+- Same protocol, same network access, same authentication methods
 
 ## Features
 
@@ -293,15 +308,17 @@ All are Palo Alto GlobalProtect portals. `prisma.usfca.edu` runs on Prisma Acces
 
 ## Differences from Official GlobalProtect
 
-| | GlobalProtect | DonsProtect |
-|---|---|---|
-| Quit behavior | Resists quitting, restarts itself | Quit kills everything |
+| Feature | Official GlobalProtect | DonsProtect |
+|---------|----------------------|-------------|
+| **Close behavior** | **Cannot be closed** — no option provided in the app | **Quit = fully closed** — behaves like a normal app |
+| Background persistence | Services keep running no matter what | None — everything stops when you quit |
 | Background agents | Multiple persistent services/daemons | None |
 | System extensions | Installs kernel/network extensions | None (uses OpenConnect) |
 | Visibility | Opaque, no logs | Full OpenConnect log stream |
 | Uninstall | Requires special uninstaller tool | Delete the app |
 | Protocol | GlobalProtect (proprietary client) | GlobalProtect (OpenConnect, open source) |
-| Force quit | Often fails or reconnects | Works normally |
+| Force quit | Doesn't work — restarts automatically | Works normally |
+| Network access | Full USFCA internal network access | Full USFCA internal network access |
 | Cross-platform | Separate clients per OS | Single codebase, all desktops |
 
 ## Troubleshooting
@@ -312,7 +329,13 @@ Install OpenConnect for your platform (see [Prerequisites](#prerequisites)).
 
 ### Connection fails immediately
 
-- Make sure you're not already connected via the official GlobalProtect client
+- **Make sure you're not already connected via the official GlobalProtect client**
+- GlobalProtect **provides no way to close itself** — background services persist even after quitting
+- To use DonsProtect, you must force-kill GlobalProtect:
+  - **macOS**: `sudo pkill -9 -i globalprotect && sudo killall -9 PanGPS`
+  - **Windows**: Open Task Manager → End all "GlobalProtect" and "PanGPS" tasks
+  - **Linux**: `sudo pkill -9 -i globalprotect`
+- Or uninstall GlobalProtect completely (recommended if using DonsProtect long-term)
 - Check that the gateway hostname resolves: `nslookup vpn1.usfca.edu`
 - Try connecting manually to verify OpenConnect works:
   ```bash

@@ -3,7 +3,7 @@ name = "dons-protect"
 version = "0.1.0"
 edition = "2021"
 authors = ["Jake Abendroth"]
-description = "A transparent desktop VPN client for USF, replacing the official GlobalProtect client"
+description = "An alternative to the USFCA GlobalProtect VPN client that actually closes"
 license = "MIT"
 repository = "https://github.com/jabendroth/DonsProtect"
 
