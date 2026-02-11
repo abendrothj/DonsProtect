@@ -57,11 +57,17 @@ header h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: .5px
 /* ── Gateway ── */
 .gateway-section {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gateway-section > div:first-of-type {
+  display: flex;
   align-items: center;
   gap: 10px;
 }
 .gateway-section label { font-size: 12px; color: #888; }
-.gateway-section select {
+.gateway-section select,
+.gateway-section input[type="text"] {
   flex: 1;
   background: #16213e;
   color: #e0e0e0;
@@ -70,6 +76,62 @@ header h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: .5px
   padding: 8px 10px;
   font-size: 13px;
   outline: none;
+}
+.gateway-section input[type="text"]:focus { border-color: #2ecc71; }
+
+.gateway-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.gateway-status.validating {
+  background: #1a2940;
+  border: 1px solid #3b82f6;
+}
+
+.gateway-status.valid {
+  background: #1a2e1a;
+  border: 1px solid #2ecc71;
+}
+
+.gateway-status.invalid {
+  background: #2e1a1a;
+  border: 1px solid #e74c3c;
+}
+
+.status-icon {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.status-icon.spinner::before {
+  content: "⟳";
+  animation: spin 1s linear infinite;
+}
+
+.status-icon.check::before {
+  content: "✓";
+  color: #2ecc71;
+}
+
+.status-icon.cross::before {
+  content: "✗";
+  color: #e74c3c;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Tabs ── */
@@ -110,18 +172,6 @@ header h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: .5px
 .panel input:focus { border-color: #2ecc71; }
 
 .panel-hint { font-size: 12px; color: #888; text-align: center; padding: 8px 0; }
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #888;
-  cursor: pointer;
-}
-.checkbox-row input[type="checkbox"] {
-  accent-color: #2ecc71;
-}
 
 /* ── Buttons ── */
 .btn {
@@ -169,4 +219,7 @@ header h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: .5px
   overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
 }

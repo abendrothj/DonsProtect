@@ -21,30 +21,50 @@
 
     <!-- Gateway selector -->
     <div class="gateway-section">
-      <label for="gateway">Gateway</label>
-      <select id="gateway">
-        <option value="vpn1.usfca.edu">vpn1.usfca.edu (Student)</option>
-        <option value="svpn.usfca.edu">svpn.usfca.edu (Faculty)</option>
-      </select>
+      <div>
+        <label for="gateway">Gateway</label>
+        <select id="gateway">
+          <option value="vpn1.usfca.edu">vpn1.usfca.edu (Student)</option>
+          <option value="svpn.usfca.edu">svpn.usfca.edu (Faculty — Duo)</option>
+          <option value="svpn1.usfca.edu">svpn1.usfca.edu (Faculty — Duo backup)</option>
+          <option value="prisma.usfca.edu">prisma.usfca.edu (Faculty — SSO)</option>
+          <option value="__custom__">Custom...</option>
+        </select>
+      </div>
+      <input type="text" id="gateway-custom" placeholder="vpn.example.com" style="display:none">
+      <div id="gateway-status" class="gateway-status" style="display:none">
+        <span id="gateway-status-icon" class="status-icon"></span>
+        <span id="gateway-status-text" class="status-text"></span>
+      </div>
     </div>
 
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab active" data-tab="student">Student</button>
-      <button class="tab" data-tab="faculty">Faculty</button>
+      <button class="tab active" data-tab="password">Password</button>
+      <button class="tab" data-tab="duo">Duo</button>
+      <button class="tab" data-tab="sso">SSO</button>
     </div>
 
-    <!-- Student panel -->
-    <div id="panel-student" class="panel active">
+    <!-- Password panel (vpn1 — student, password only) -->
+    <div id="panel-password" class="panel active">
       <input type="text" id="username" placeholder="NetID" autocomplete="username">
       <input type="password" id="password" placeholder="Password" autocomplete="current-password">
-      <button id="btn-connect-student" class="btn btn-connect">Connect</button>
+      <button id="btn-connect-password" class="btn btn-connect">Connect</button>
     </div>
 
-    <!-- Faculty panel -->
-    <div id="panel-faculty" class="panel">
-      <p class="panel-hint">Authenticate via Duo SSO to connect.</p>
-      <button id="btn-connect-faculty" class="btn btn-connect">Log in with Duo</button>
+    <!-- Duo panel (svpn / svpn1 — faculty, password + Duo Push) -->
+    <div id="panel-duo" class="panel">
+      <input type="text" id="duo-username" placeholder="NetID" autocomplete="username">
+      <input type="password" id="duo-password" placeholder="Password" autocomplete="current-password">
+      <p class="panel-hint">Approve the Duo push on your phone after connecting, or enter a passcode below.</p>
+      <input type="text" id="duo-code" placeholder="Duo passcode (or leave blank for push)">
+      <button id="btn-connect-duo" class="btn btn-connect">Connect with Duo</button>
+    </div>
+
+    <!-- SSO panel (prisma — faculty, SAML via idpa.usfca.edu) -->
+    <div id="panel-sso" class="panel">
+      <p class="panel-hint">Authenticate via USFCA SSO to connect.</p>
+      <button id="btn-connect-sso" class="btn btn-connect">Log in with SSO</button>
     </div>
 
     <!-- Disconnect (shown when connected) -->

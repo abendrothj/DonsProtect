@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Listener, Manager, Runtime, WebviewUrl, WebviewWindowBuilder};
 
-use crate::vpn::LogPayload;
+use crate::vpn::emit_log;
 
 /// Result from a successful GlobalProtect SAML authentication.
 #[derive(Clone, Serialize)]
@@ -75,12 +75,7 @@ pub async fn start_saml_flow<R: Runtime>(
     app: AppHandle<R>,
     gateway: String,
 ) -> Result<SamlResult, String> {
-    let _ = app.emit(
-        "vpn-log",
-        LogPayload {
-            message: "Opening SSO login...".into(),
-        },
-    );
+    emit_log(&app, "Opening SSO login...");
 
     let clientos = if cfg!(target_os = "windows") {
         "Windows"
@@ -143,12 +138,7 @@ pub async fn start_saml_flow<R: Runtime>(
                         if let Some((acs_url, saml_resp_encoded)) = data.split_once('|') {
                             let acs_url = acs_url.to_string();
                             let saml_resp = saml_resp_encoded.to_string();
-                            let _ = app_for_title.emit(
-                                "vpn-log",
-                                LogPayload {
-                                    message: "SAML response captured.".into(),
-                                },
-                            );
+                            emit_log(&app_for_title, "SAML response captured.");
                             if let Ok(mut guard) = tx_title.lock() {
                                 if let Some(sender) = guard.take() {
                                     let _ = sender.send((acs_url, saml_resp));
@@ -208,13 +198,4 @@ pub async fn start_saml_flow<R: Runtime>(
     emit_log(&app, &format!("Authenticated as {}", username));
 
     Ok(SamlResult { username, cookie })
-}
-
-fn emit_log<R: Runtime>(app: &AppHandle<R>, msg: &str) {
-    let _ = app.emit(
-        "vpn-log",
-        LogPayload {
-            message: msg.to_string(),
-        },
-    );
 }

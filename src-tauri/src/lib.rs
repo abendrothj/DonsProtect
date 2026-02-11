@@ -13,20 +13,22 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .manage(VpnState::new())
         .invoke_handler(tauri::generate_handler![
+            vpn::check_openconnect,
+            vpn::prelogin_probe,
             vpn::connect_student,
+            vpn::connect_duo,
             vpn::connect_faculty,
             vpn::disconnect,
             auth::start_saml_flow,
         ])
         .setup(|app| {
             // ── Tray Menu ──
-            let show = MenuItem::with_id(app, "show", "Show Status", true, None::<&str>)?;
-            let connect = MenuItem::with_id(app, "connect", "Connect", true, None::<&str>)?;
+            let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
             let disconnect =
                 MenuItem::with_id(app, "disconnect", "Disconnect", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
 
-            let menu = Menu::with_items(app, &[&show, &connect, &disconnect, &quit])?;
+            let menu = Menu::with_items(app, &[&show, &disconnect, &quit])?;
 
             // ── Tray Icon ──
             let _tray = TrayIconBuilder::new()
@@ -35,12 +37,6 @@ pub fn run() {
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
-                        if let Some(w) = app.get_webview_window("main") {
-                            let _ = w.show();
-                            let _ = w.set_focus();
-                        }
-                    }
-                    "connect" => {
                         if let Some(w) = app.get_webview_window("main") {
                             let _ = w.show();
                             let _ = w.set_focus();

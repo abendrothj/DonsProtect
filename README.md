@@ -25,7 +25,8 @@ DonsProtect does none of that. It's a single app. You launch it, connect, and wh
 
 - **System tray app** — lives in your system tray / menu bar, toggle the window with a click
 - **Student login** — authenticate with your USF NetID and password
-- **Faculty/Staff login** — authenticate via Duo SSO (SAML), the same flow as the browser
+- **Faculty/Staff Duo login** — authenticate with password + Duo Push or passcode
+- **Faculty/Staff SSO login** — authenticate via SAML through USFCA's identity provider
 - **Full log visibility** — see every line of OpenConnect output in real time
 - **Clean quit** — closing the app kills the VPN tunnel completely. Nothing left behind
 - **Cross-platform** — runs on macOS, Windows, and Linux
@@ -34,27 +35,27 @@ DonsProtect does none of that. It's a single app. You launch it, connect, and wh
 
 ## Screenshot
 
-```
-┌─────────────────────────┐
-│      DonsProtect        │
-│    USFCA VPN Client     │
-│                         │
-│   🔴 Disconnected       │
-│                         │
-│  Gateway: [vpn1.usfca] │
-│                         │
-│  [Student] [Faculty]    │
-│                         │
-│  NetID:    [________]   │
-│  Password: [________]   │
-│                         │
-│     [ Connect ]         │
-│                         │
-│  Logs                   │
-│  ┌────────────────────┐ │
-│  │ DonsProtect ready. │ │
-│  └────────────────────┘ │
-└─────────────────────────┘
+```text
+┌──────────────────────────┐
+│       DonsProtect        │
+│     USFCA VPN Client     │
+│                          │
+│    🔴 Disconnected       │
+│                          │
+│  Gateway: [vpn1.usfca]  │
+│                          │
+│ [Password] [Duo] [SSO]  │
+│                          │
+│  NetID:    [________]    │
+│  Password: [________]    │
+│                          │
+│      [ Connect ]         │
+│                          │
+│  Logs                    │
+│  ┌─────────────────────┐ │
+│  │ DonsProtect ready.  │ │
+│  └─────────────────────┘ │
+└──────────────────────────┘
 ```
 
 ## Prerequisites
@@ -201,18 +202,26 @@ Build output locations:
 
 ## Usage
 
-### Student Login
+### Student Login (Password)
 
 1. Select **vpn1.usfca.edu** from the gateway dropdown
 2. Enter your USF **NetID** and **password**
 3. Click **Connect**
 4. Your OS will prompt for admin/root credentials (OpenConnect needs root to create a tunnel interface)
 
-### Faculty / Staff Login (Duo SSO)
+### Faculty / Staff Login (Duo Push)
 
-1. Select **svpn.usfca.edu** from the gateway dropdown
-2. Click **Log in with Duo**
-3. Complete Duo authentication in the popup window
+1. Select **svpn.usfca.edu** (or **svpn1.usfca.edu** backup) from the gateway dropdown
+2. Enter your USF **NetID** and **password**
+3. Optionally enter a **Duo passcode**, or leave blank for a push notification
+4. Click **Connect with Duo**
+5. Approve the Duo push on your phone (if you left the passcode blank)
+
+### Faculty / Staff Login (SSO / SAML)
+
+1. Select **prisma.usfca.edu** from the gateway dropdown
+2. Click **Log in with SSO**
+3. Complete authentication in the popup window (redirects to `idpa.usfca.edu`)
 4. The VPN connects automatically after authentication
 
 ### Disconnecting
@@ -239,11 +248,13 @@ DonsProtect
 
 DonsProtect speaks the same **Palo Alto GlobalProtect** protocol as the official client:
 
-1. **Student mode**: Runs `openconnect --protocol=gp --user=<NetID> --passwd-on-stdin <gateway>` with elevated privileges.
+1. **Password mode** (vpn1): Runs `openconnect --protocol=gp --user=<NetID> --passwd-on-stdin <gateway>` with elevated privileges, piping the password.
 
-2. **Faculty mode (SAML)**: 
+2. **Duo mode** (svpn / svpn1): Same as password mode, but pipes both the password and the Duo challenge response (`push` or a passcode) as two stdin lines. The GlobalProtect server sends a RADIUS challenge after the password, and OpenConnect reads the second line as the response.
+
+3. **SSO / SAML mode** (prisma):
    - Opens a webview to the GlobalProtect prelogin endpoint
-   - User completes Duo/SSO authentication
+   - User completes authentication at `idpa.usfca.edu` (Shibboleth IdP)
    - JavaScript intercepts the SAML ACS form submission
    - Rust replays the SAML POST to capture the `prelogin-cookie` and `saml-username` response headers
    - Runs `openconnect --protocol=gp --user=<saml-username> --usergroup=gateway:prelogin-cookie --passwd-on-stdin <gateway>`, piping the prelogin-cookie
@@ -260,10 +271,12 @@ DonsProtect speaks the same **Palo Alto GlobalProtect** protocol as the official
 
 | Gateway | Audience | Auth Method |
 |---------|----------|-------------|
-| `vpn1.usfca.edu` | Students | NetID + Password |
-| `svpn.usfca.edu` | Faculty / Staff | Duo SSO (SAML) |
+| `vpn1.usfca.edu` | Students, Board of Trustees | NetID + Password |
+| `svpn.usfca.edu` | Faculty, Staff, Student Workers | Password + Duo Push |
+| `svpn1.usfca.edu` | Faculty, Staff (backup) | Password + Duo Push |
+| `prisma.usfca.edu` | Faculty, Staff, Student Workers | SAML SSO via `idpa.usfca.edu` |
 
-Both are Palo Alto GlobalProtect portals.
+All are Palo Alto GlobalProtect portals. `prisma.usfca.edu` runs on Prisma Access (cloud).
 
 ## Tech Stack
 
